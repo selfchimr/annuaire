@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annuaire du Personnel</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-50: #E6F1FB; --blue-800: #0C447C;
+      --teal-50: #E1F5EE; --teal-800: #085041;
+      --purple-50: #EEEDFE; --purple-800: #3C3489;
+      --coral-50: #FAECE7; --coral-800: #712B13;
+      --pink-50: #FBEAF0; --pink-800: #72243E;
+      --amber-50: #FAEEDA; --amber-800: #633806;
+      --green-50: #EAF3DE; --green-800: #27500A;
+      --red-50: #FCEBEB; --red-800: #791F1F;
+      --gray-100: #f5f5f3; --gray-200: #e8e8e4; --gray-400: #a0a09a;
+      --gray-600: #5f5e5a; --gray-900: #1a1a18;
+      --radius-md: 8px; --radius-lg: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .top-bar {
+      background: #fff;
+      border-bottom: 0.5px solid var(--gray-200);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .top-bar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+      font-size: 16px;
+    }
+    .top-bar-brand i { font-size: 20px; color: #185FA5; }
+    .top-bar-sub { font-size: 13px; color: var(--gray-400); margin-left: 4px; }
+
+    /* Layout */
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .controls input, .controls select {
+      height: 38px;
+      padding: 0 12px;
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      background: #fff;
+      color: var(--gray-900);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .controls input:focus, .controls select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
+    #search { width: 240px; }
+    .controls-right { margin-left: auto; }
+    .btn {
+      height: 38px;
+      padding: 0 16px;
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      background: #fff;
+      color: var(--gray-900);
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: background 0.12s;
+    }
+    .btn:hover { background: var(--gray-100); }
+    .btn-primary {
+      background: #185FA5;
+      border-color: #185FA5;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #0C447C; border-color: #0C447C; }
+    .btn-sm { height: 30px; font-size: 12px; padding: 0 10px; }
+    .btn-danger { background: #FCEBEB; border-color: #F7C1C1; color: #791F1F; }
+    .btn-danger:hover { background: #F7C1C1; }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.75rem;
+    }
+    .stat {
+      background: #fff;
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+    }
+    .stat-label { font-size: 12px; color: var(--gray-400); margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 500; }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: #fff;
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.15s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: 14px; flex-shrink: 0;
+    }
+    .card-name { font-weight: 500; font-size: 15px; }
+    .card-role { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; padding: 3px 8px;
+      border-radius: var(--radius-md);
+      background: var(--gray-100);
+      color: var(--gray-600);
+      border: 0.5px solid var(--gray-200);
+      font-weight: 500;
+    }
+    .card-info {
+      font-size: 13px; color: var(--gray-400);
+      display: flex; align-items: center; gap: 6px; margin-top: 6px;
+    }
+    .card-info i { font-size: 14px; flex-shrink: 0; }
+    .card-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-actions {
+      display: flex; gap: 6px;
+      margin-top: 12px; padding-top: 12px;
+      border-top: 0.5px solid var(--gray-200);
+    }
+    .card-actions .btn { flex: 1; justify-content: center; }
+
+    /* Empty */
+    .empty {
+      grid-column: 1/-1; text-align: center;
+      padding: 4rem; color: var(--gray-400);
+    }
+    .empty i { font-size: 40px; display: block; margin-bottom: 12px; }
+
+    /* Modal */
+    .modal-bg {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; padding: 1rem;
+    }
+    .modal {
+      background: #fff;
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      width: 100%; max-width: 440px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .modal h2 { font-size: 17px; font-weight: 500; margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--gray-600); margin-bottom: 5px; }
+    .field input, .field select {
+      width: 100%; height: 38px; padding: 0 12px;
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-size: 14px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
+    .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
+
+    /* Notice */
+    .notice {
+      background: #E6F1FB; border: 0.5px solid #B5D4F4;
+      border-radius: var(--radius-md); padding: 10px 14px;
+      font-size: 13px; color: #0C447C;
+      display: flex; align-items: flex-start; gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+    .notice i { flex-shrink: 0; margin-top: 1px; }
+
+    @media (max-width: 600px) {
+      .top-bar { padding: 0 1rem; }
+      .container { padding: 1rem; }
+      #search { width: 100%; }
+      .controls { flex-direction: column; }
+      .controls-right { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-brand">
+    <i class="ti ti-building-hospital"></i>
+    Annuaire du Personnel
+    <span class="top-bar-sub">— Intranet</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="notice" id="notice">
+    <i class="ti ti-info-circle"></i>
+    <span>Les modifications sont enregistrées localement dans votre navigateur. Pour une base de données partagée, demandez à votre informaticien de connecter un backend (voir le fichier <strong>README.txt</strong> joint).</span>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="Rechercher par nom, prénom, spécialité…" oninput="applyFilters()">
+    <select id="filterService" onchange="applyFilters()">
+      <option value="">Tous les services</option>
+    </select>
+    <select id="filterRole" onchange="applyFilters()">
+      <option value="">Tous les rôles</option>
+    </select>
+    <div class="controls-right">
+      <button class="btn btn-primary" onclick="openAdd()">
+        <i class="ti ti-plus"></i> Ajouter un membre
+      </button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div class="grid" id="grid"></div>
+
+</div>
+
+<div class="modal-bg" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="modal-title">Nouvelle fiche</h2>
+    <div class="form-row">
+      <div class="field"><label>Prénom *</label><input type="text" id="f-prenom" placeholder="Prénom"></div>
+      <div class="field"><label>Nom *</label><input type="text" id="f-nom" placeholder="Nom"></div>
+    </div>
+    <div class="field"><label>Rôle</label>
+      <select id="f-role">
+        <option>Médecin</option><option>Chirurgien</option><option>Infirmier(e)</option>
+        <option>Aide-soignant(e)</option><option>Administratif</option><option>Radiologue</option>
+        <option>Pharmacien(ne)</option><option>Interne</option>
+      </select>
+    </div>
+    <div class="field"><label>Service</label>
+      <select id="f-service">
+        <option>Urgences</option><option>Cardiologie</option><option>Pédiatrie</option>
+        <option>Chirurgie</option><option>Radiologie</option><option>Neurologie</option>
+        <option>Oncologie</option><option>Administration</option><option>Pharmacie</option>
+        <option>Bloc opératoire</option>
+      </select>
+    </div>
+    <div class="field"><label>Téléphone</label><input type="text" id="f-tel" placeholder="01 23 45 67 89"></div>
+    <div class="field"><label>Email</label><input type="text" id="f-email" placeholder="prenom.nom@hopital.fr"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveModal()"><i class="ti ti-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = [
+  {bg:"#E6F1FB",color:"#0C447C"},{bg:"#E1F5EE",color:"#085041"},
+  {bg:"#EEEDFE",color:"#3C3489"},{bg:"#FAECE7",color:"#712B13"},
+  {bg:"#FBEAF0",color:"#72243E"},{bg:"#FAEEDA",color:"#633806"},
+  {bg:"#EAF3DE",color:"#27500A"},{bg:"#FCEBEB",color:"#791F1F"}
+];
+
+let staff = [];
+let filtered = [];
+let editId = null;
+let nextId = 100;
+
+// Load data from personnel.json, fallback to localStorage
+async function loadData() {
+  const saved = localStorage.getItem('annuaire_staff');
+  if (saved) {
+    staff = JSON.parse(saved);
+    nextId = Math.max(...staff.map(s => s.id), 0) + 1;
+  } else {
+    try {
+      const res = await fetch('personnel.json');
+      staff = await res.json();
+      nextId = Math.max(...staff.map(s => s.id), 0) + 1;
+      saveData();
+    } catch(e) {
+      staff = [];
+    }
+  }
+  populateFilters();
+  applyFilters();
+}
+
+function saveData() {
+  localStorage.setItem('annuaire_staff', JSON.stringify(staff));
+}
+
+function avatarColor(str) {
+  let h = 0;
+  for (const c of str) h = (h * 31 + c.charCodeAt(0)) % COLORS.length;
+  return COLORS[h];
+}
+
+function initials(p, n) {
+  return ((p||'')[0]||'').toUpperCase() + ((n||'')[0]||'').toUpperCase();
+}
+
+function populateFilters() {
+  const services = [...new Set(staff.map(s => s.service))].sort();
+  const roles = [...new Set(staff.map(s => s.role))].sort();
+  const fSvc = document.getElementById('filterService');
+  const fRole = document.getElementById('filterRole');
+  const curSvc = fSvc.value, curRole = fRole.value;
+  fSvc.innerHTML = '<option value="">Tous les services</option>' +
+    services.map(s => `<option value="${s}"${curSvc===s?' selected':''}>${s}</option>`).join('');
+  fRole.innerHTML = '<option value="">Tous les rôles</option>' +
+    roles.map(r => `<option value="${r}"${curRole===r?' selected':''}>${r}</option>`).join('');
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const svc = document.getElementById('filterService').value;
+  const role = document.getElementById('filterRole').value;
+  filtered = staff.filter(s => {
+    const matchQ = !q || [s.nom,s.prenom,s.role,s.service,s.email,s.tel].join(' ').toLowerCase().includes(q);
+    const matchSvc = !svc || s.service === svc;
+    const matchRole = !role || s.role === role;
+    return matchQ && matchSvc && matchRole;
+  });
+  renderStats();
+  renderGrid();
+}
+
+function renderStats() {
+  const services = [...new Set(staff.map(s => s.service))];
+  const topSvc = services.map(s => ({s, n: staff.filter(x => x.service===s).length}))
+    .sort((a,b) => b.n - a.n)[0];
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Total personnel</div><div class="stat-value">${staff.length}</div></div>
+    <div class="stat"><div class="stat-label">Services</div><div class="stat-value">${services.length}</div></div>
+    <div class="stat"><div class="stat-label">Résultats</div><div class="stat-value">${filtered.length}</div></div>
+    ${topSvc ? `<div class="stat"><div class="stat-label">Service le plus grand</div><div class="stat-value" style="font-size:16px;padding-top:4px">${topSvc.s} <span style="font-size:13px;color:var(--gray-400)">(${topSvc.n})</span></div></div>` : ''}
+  `;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty"><i class="ti ti-search"></i>Aucun résultat pour cette recherche</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(s => {
+    const col = avatarColor(s.nom + s.prenom);
+    return `<div class="card">
+      <div class="card-head">
+        <div class="avatar" style="background:${col.bg};color:${col.color}">${initials(s.prenom, s.nom)}</div>
+        <div>
+          <div class="card-name">${escHtml(s.prenom)} ${escHtml(s.nom)}</div>
+          <div class="card-role">${escHtml(s.role)}</div>
+        </div>
+      </div>
+      <span class="badge"><i class="ti ti-building-hospital" style="font-size:12px"></i>${escHtml(s.service)}</span>
+      ${s.tel ? `<div class="card-info"><i class="ti ti-phone"></i><span>${escHtml(s.tel)}</span></div>` : ''}
+      ${s.email ? `<div class="card-info"><i class="ti ti-mail"></i><span>${escHtml(s.email)}</span></div>` : ''}
+      <div class="card-actions">
+        <button class="btn btn-sm" onclick="openEdit(${s.id})"><i class="ti ti-edit"></i> Modifier</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteMember(${s.id})"><i class="ti ti-trash"></i> Supprimer</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openAdd() {
+  editId = null;
+  document.getElementById('modal-title').textContent = 'Nouvelle fiche';
+  document.getElementById('f-prenom').value = '';
+  document.getElementById('f-nom').value = '';
+  document.getElementById('f-role').value = 'Médecin';
+  document.getElementById('f-service').value = 'Cardiologie';
+  document.getElementById('f-tel').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('f-prenom').focus();
+}
+
+function openEdit(id) {
+  editId = id;
+  const s = staff.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('modal-title').textContent = 'Modifier la fiche';
+  document.getElementById('f-prenom').value = s.prenom;
+  document.getElementById('f-nom').value = s.nom;
+  document.getElementById('f-role').value = s.role;
+  document.getElementById('f-service').value = s.service;
+  document.getElementById('f-tel').value = s.tel || '';
+  document.getElementById('f-email').value = s.email || '';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+function saveModal() {
+  const prenom = document.getElementById('f-prenom').value.trim();
+  const nom = document.getElementById('f-nom').value.trim();
+  if (!prenom || !nom) {
+    alert('Le prénom et le nom sont obligatoires.');
+    return;
+  }
+  const entry = {
+    id: editId != null ? editId : nextId++,
+    prenom,
+    nom,
+    role: document.getElementById('f-role').value,
+    service: document.getElementById('f-service').value,
+    tel: document.getElementById('f-tel').value.trim(),
+    email: document.getElementById('f-email').value.trim()
+  };
+  if (editId != null) {
+    staff = staff.map(s => s.id === editId ? entry : s);
+  } else {
+    staff.push(entry);
+  }
+  saveData();
+  populateFilters();
+  applyFilters();
+  closeModal();
+}
+
+function deleteMember(id) {
+  const s = staff.find(x => x.id === id);
+  if (!s) return;
+  if (!confirm(`Supprimer la fiche de ${s.prenom} ${s.nom} ?`)) return;
+  staff = staff.filter(x => x.id !== id);
+  saveData();
+  populateFilters();
+  applyFilters();
+}
+
+// Keyboard: Escape closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+loadData();
+</script>
+</body>
+</html>

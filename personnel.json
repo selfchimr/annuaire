@@ -1,0 +1,10 @@
+[
+  {"id":1,"nom":"Dupont","prenom":"Marie","role":"Médecin","service":"Cardiologie","tel":"01 23 45 67 01","email":"m.dupont@hopital.fr"},
+  {"id":2,"nom":"Martin","prenom":"Thomas","role":"Chirurgien","service":"Chirurgie","tel":"01 23 45 67 02","email":"t.martin@hopital.fr"},
+  {"id":3,"nom":"Bernard","prenom":"Sophie","role":"Infirmier(e)","service":"Urgences","tel":"01 23 45 67 03","email":"s.bernard@hopital.fr"},
+  {"id":4,"nom":"Leroy","prenom":"Paul","role":"Radiologue","service":"Radiologie","tel":"01 23 45 67 04","email":"p.leroy@hopital.fr"},
+  {"id":5,"nom":"Morel","prenom":"Claire","role":"Médecin","service":"Pédiatrie","tel":"01 23 45 67 05","email":"c.morel@hopital.fr"},
+  {"id":6,"nom":"Simon","prenom":"Jean","role":"Administratif","service":"Administration","tel":"01 23 45 67 06","email":"j.simon@hopital.fr"},
+  {"id":7,"nom":"Laurent","prenom":"Emma","role":"Pharmacien(ne)","service":"Pharmacie","tel":"01 23 45 67 07","email":"e.laurent@hopital.fr"},
+  {"id":8,"nom":"Petit","prenom":"Marc","role":"Interne","service":"Neurologie","tel":"01 23 45 67 08","email":"m.petit@hopital.fr"}
+]
