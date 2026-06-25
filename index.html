@@ -245,7 +245,17 @@
 
   <div class="notice" id="notice">
     <i class="ti ti-info-circle"></i>
-    <span>Les modifications sont enregistrées localement dans votre navigateur. Pour une base de données partagée, demandez à votre informaticien de connecter un backend (voir le fichier <strong>README.txt</strong> joint).</span>
+    <span>Cet annuaire est connecté à Airtable : toutes les modifications sont visibles immédiatement par tous les utilisateurs.</span>
+  </div>
+
+  <div class="notice" id="loading-state" style="display:none">
+    <i class="ti ti-loader-2"></i>
+    <span>Chargement des données depuis Airtable…</span>
+  </div>
+
+  <div class="notice" id="error-state" style="display:none; background:#FCEBEB; border-color:#F7C1C1; color:#791F1F;">
+    <i class="ti ti-alert-triangle"></i>
+    <span></span>
   </div>
 
   <div class="controls">
@@ -322,12 +332,18 @@
 
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Annuler</button>
-      <button class="btn btn-primary" onclick="saveModal()"><i class="ti ti-check"></i> Enregistrer</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveModal()"><i class="ti ti-check"></i> Enregistrer</button>
     </div>
   </div>
 </div>
 
 <script>
+// ============================================
+// CONFIGURATION — URL de votre Google Apps Script
+// ============================================
+const API_URL = "https://script.google.com/macros/s/AKfycbx78P_XgD3bsvtfumO7QluzVfQ_OzwE2aKxobABEZwfbuwsPtATj74QvBiA5CKMCLePjQ/exec";
+// ============================================
+
 const COLORS = [
   {bg:"#E6F1FB",color:"#0C447C"},{bg:"#E1F5EE",color:"#085041"},
   {bg:"#EEEDFE",color:"#3C3489"},{bg:"#FAECE7",color:"#712B13"},
@@ -337,30 +353,68 @@ const COLORS = [
 
 let staff = [];
 let filtered = [];
-let editId = null;
-let nextId = 100;
+let editId = null; // id numérique de la ligne dans le Google Sheet
+let isSaving = false;
 
 async function loadData() {
-  const saved = localStorage.getItem('annuaire_staff');
-  if (saved) {
-    staff = JSON.parse(saved);
-    nextId = Math.max(...staff.map(s => s.id), 0) + 1;
-  } else {
-    try {
-      const res = await fetch('personnel.json');
-      staff = await res.json();
-      nextId = Math.max(...staff.map(s => s.id), 0) + 1;
-      saveData();
-    } catch(e) {
-      staff = [];
-    }
+  showLoading(true);
+  showError('');
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    if (data && data.error) throw new Error(data.error);
+    staff = (data || []).map(normalizeRecord);
+    populateFilters();
+    applyFilters();
+  } catch (e) {
+    showError("Impossible de charger les données depuis Google Sheets. Vérifiez que le script est bien déployé et accessible. Détail : " + e.message);
+  } finally {
+    showLoading(false);
   }
-  populateFilters();
-  applyFilters();
 }
 
-function saveData() {
-  localStorage.setItem('annuaire_staff', JSON.stringify(staff));
+function normalizeRecord(r) {
+  return {
+    id: r.id,
+    site: r.site || '',
+    titre: r.titre || '',
+    prenom: r.prenom || '',
+    nom: r.nom || '',
+    service: r.service || '',
+    fonction: r.fonction || '',
+    tel: r.tel || '',
+    abrege: r.abrege ? String(r.abrege) : '',
+    commentaire: r.commentaire || ''
+  };
+}
+
+async function apiPost(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // évite le preflight CORS avec Apps Script
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const data = await res.json();
+  if (data && data.success === false) throw new Error(data.error || 'Erreur inconnue côté script');
+  return data;
+}
+
+function showLoading(on) {
+  if (on) {
+    document.getElementById('grid').innerHTML = `<div class="empty"><i class="ti ti-loader-2"></i>Chargement de l'annuaire…</div>`;
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-state');
+  if (!el) return;
+  if (msg) {
+    el.style.display = 'flex';
+    el.querySelector('span').textContent = msg;
+  } else {
+    el.style.display = 'none';
+  }
 }
 
 function avatarColor(str) {
@@ -493,7 +547,7 @@ function openAdd() {
 
 function openEdit(id) {
   editId = id;
-  const s = staff.find(x => x.id === id);
+  const s = staff.find(x => String(x.id) === String(id));
   if (!s) return;
   document.getElementById('modal-title').textContent = 'Modifier la fiche';
   document.getElementById('f-site').value = s.site || 'Montdidier';
@@ -516,7 +570,7 @@ function closeModal() {
   document.getElementById('modal').style.display = 'none';
 }
 
-function saveModal() {
+async function saveModal() {
   const prenom = document.getElementById('f-prenom').value.trim();
   const nom = document.getElementById('f-nom').value.trim();
   const tel = document.getElementById('f-tel').value.trim();
@@ -537,7 +591,6 @@ function saveModal() {
   }
 
   const entry = {
-    id: editId != null ? editId : nextId++,
     site: document.getElementById('f-site').value,
     titre: document.getElementById('f-titre').value,
     prenom,
@@ -548,25 +601,47 @@ function saveModal() {
     abrege,
     commentaire: document.getElementById('f-commentaire').value.trim()
   };
-  if (editId != null) {
-    staff = staff.map(s => s.id === editId ? entry : s);
-  } else {
-    staff.push(entry);
+
+  if (isSaving) return;
+  isSaving = true;
+  setSaveButtonLoading(true);
+
+  try {
+    if (editId != null) {
+      entry.id = editId;
+      await apiPost({ action: 'update', entry });
+    } else {
+      await apiPost({ action: 'add', entry });
+    }
+    closeModal();
+    await loadData();
+  } catch (e) {
+    alert("Erreur lors de l'enregistrement : " + e.message);
+  } finally {
+    isSaving = false;
+    setSaveButtonLoading(false);
   }
-  saveData();
-  populateFilters();
-  applyFilters();
-  closeModal();
 }
 
-function deleteMember(id) {
-  const s = staff.find(x => x.id === id);
+function setSaveButtonLoading(on) {
+  const btn = document.getElementById('save-btn');
+  if (!btn) return;
+  btn.disabled = on;
+  btn.innerHTML = on
+    ? '<i class="ti ti-loader-2"></i> Enregistrement…'
+    : '<i class="ti ti-check"></i> Enregistrer';
+}
+
+async function deleteMember(id) {
+  const s = staff.find(x => String(x.id) === String(id));
   if (!s) return;
   if (!confirm(`Supprimer la fiche de ${s.prenom} ${s.nom} ?`)) return;
-  staff = staff.filter(x => x.id !== id);
-  saveData();
-  populateFilters();
-  applyFilters();
+  try {
+    await apiPost({ action: 'delete', id });
+    await loadData();
+  } catch (e) {
+    alert("Erreur lors de la suppression : " + e.message);
+  }
 }
 
 loadData();
