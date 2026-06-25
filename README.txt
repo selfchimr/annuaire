@@ -8,6 +8,18 @@ FICHIERS FOURNIS
   personnel.json  → Données initiales du personnel
   README.txt      → Ce fichier
 
+CHAMPS DE LA FICHE PERSONNEL
+------------------------------
+  Site          : Montdidier ou Roye (liste déroulante)
+  Titre         : Monsieur, Madame ou Docteur (liste déroulante)
+  Prénom        : champ libre
+  Nom           : champ libre
+  Service       : champ libre (ex : Cardiologie, Urgences…)
+  Fonction      : champ libre (ex : Médecin, Infirmier(e)…)
+  Téléphone     : format français, 10 chiffres (auto-formaté 01 23 45 67 89)
+  Numéro abrégé : 4 chiffres exactement
+  Commentaire   : champ libre (notes, disponibilité, remarques)
+
 DÉPLOIEMENT SUR INTRANET (pour l'informaticien)
 -------------------------------------------------
 1. Copier les deux fichiers (index.html + personnel.json)
@@ -46,11 +58,11 @@ Option B — Fichier JSON centralisé (lecture seule)
   - Les utilisateurs verront les données à jour au rechargement
   - Les ajouts/modifications via l'interface ne seront pas partagés
 
-PERSONNALISATION
------------------
-- Pour modifier les services disponibles : chercher "SERVICES" dans index.html
-- Pour modifier les rôles disponibles : chercher "ROLES" dans index.html
-- Pour changer le nom de l'hôpital : chercher "Annuaire du Personnel" dans index.html
+IMPORT EN MASSE (Excel)
+-------------------------
+Pour ajouter beaucoup de personnel d'un coup, préparez un fichier Excel
+avec les colonnes : site, titre, prenom, nom, service, fonction, tel,
+abrege, commentaire — puis demandez la conversion en personnel.json.
 
 COMPATIBILITÉ NAVIGATEURS
 --------------------------

@@ -1,10 +1,10 @@
 [
-  {"id":1,"nom":"Dupont","prenom":"Marie","role":"Médecin","service":"Cardiologie","tel":"01 23 45 67 01","email":"m.dupont@hopital.fr"},
-  {"id":2,"nom":"Martin","prenom":"Thomas","role":"Chirurgien","service":"Chirurgie","tel":"01 23 45 67 02","email":"t.martin@hopital.fr"},
-  {"id":3,"nom":"Bernard","prenom":"Sophie","role":"Infirmier(e)","service":"Urgences","tel":"01 23 45 67 03","email":"s.bernard@hopital.fr"},
-  {"id":4,"nom":"Leroy","prenom":"Paul","role":"Radiologue","service":"Radiologie","tel":"01 23 45 67 04","email":"p.leroy@hopital.fr"},
-  {"id":5,"nom":"Morel","prenom":"Claire","role":"Médecin","service":"Pédiatrie","tel":"01 23 45 67 05","email":"c.morel@hopital.fr"},
-  {"id":6,"nom":"Simon","prenom":"Jean","role":"Administratif","service":"Administration","tel":"01 23 45 67 06","email":"j.simon@hopital.fr"},
-  {"id":7,"nom":"Laurent","prenom":"Emma","role":"Pharmacien(ne)","service":"Pharmacie","tel":"01 23 45 67 07","email":"e.laurent@hopital.fr"},
-  {"id":8,"nom":"Petit","prenom":"Marc","role":"Interne","service":"Neurologie","tel":"01 23 45 67 08","email":"m.petit@hopital.fr"}
+  {"id":1,"site":"Montdidier","titre":"Docteur","prenom":"Marie","nom":"Dupont","service":"Cardiologie","fonction":"Médecin","tel":"01 23 45 67 01","abrege":"1001","commentaire":""},
+  {"id":2,"site":"Roye","titre":"Docteur","prenom":"Thomas","nom":"Martin","service":"Chirurgie","fonction":"Chirurgien","tel":"01 23 45 67 02","abrege":"1002","commentaire":""},
+  {"id":3,"site":"Montdidier","titre":"Madame","prenom":"Sophie","nom":"Bernard","service":"Urgences","fonction":"Infirmière","tel":"01 23 45 67 03","abrege":"1003","commentaire":""},
+  {"id":4,"site":"Roye","titre":"Monsieur","prenom":"Paul","nom":"Leroy","service":"Radiologie","fonction":"Radiologue","tel":"01 23 45 67 04","abrege":"1004","commentaire":""},
+  {"id":5,"site":"Montdidier","titre":"Docteur","prenom":"Claire","nom":"Morel","service":"Pédiatrie","fonction":"Médecin","tel":"01 23 45 67 05","abrege":"1005","commentaire":""},
+  {"id":6,"site":"Roye","titre":"Monsieur","prenom":"Jean","nom":"Simon","service":"Administration","fonction":"Administratif","tel":"01 23 45 67 06","abrege":"1006","commentaire":""},
+  {"id":7,"site":"Montdidier","titre":"Madame","prenom":"Emma","nom":"Laurent","service":"Pharmacie","fonction":"Pharmacienne","tel":"01 23 45 67 07","abrege":"1007","commentaire":""},
+  {"id":8,"site":"Roye","titre":"Monsieur","prenom":"Marc","nom":"Petit","service":"Neurologie","fonction":"Interne","tel":"01 23 45 67 08","abrege":"1008","commentaire":""}
 ]

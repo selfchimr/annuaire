@@ -9,14 +9,6 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --blue-50: #E6F1FB; --blue-800: #0C447C;
-      --teal-50: #E1F5EE; --teal-800: #085041;
-      --purple-50: #EEEDFE; --purple-800: #3C3489;
-      --coral-50: #FAECE7; --coral-800: #712B13;
-      --pink-50: #FBEAF0; --pink-800: #72243E;
-      --amber-50: #FAEEDA; --amber-800: #633806;
-      --green-50: #EAF3DE; --green-800: #27500A;
-      --red-50: #FCEBEB; --red-800: #791F1F;
       --gray-100: #f5f5f3; --gray-200: #e8e8e4; --gray-400: #a0a09a;
       --gray-600: #5f5e5a; --gray-900: #1a1a18;
       --radius-md: 8px; --radius-lg: 12px;
@@ -54,7 +46,7 @@
     .top-bar-sub { font-size: 13px; color: var(--gray-400); margin-left: 4px; }
 
     /* Layout */
-    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .container { max-width: 1150px; margin: 0 auto; padding: 2rem 1.5rem; }
 
     /* Controls */
     .controls {
@@ -123,7 +115,7 @@
     /* Grid */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
       gap: 12px;
     }
     .card {
@@ -142,7 +134,8 @@
       font-weight: 500; font-size: 14px; flex-shrink: 0;
     }
     .card-name { font-weight: 500; font-size: 15px; }
-    .card-role { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+    .card-fonction { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+    .badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
     .badge {
       display: inline-flex; align-items: center; gap: 4px;
       font-size: 11px; padding: 3px 8px;
@@ -152,12 +145,21 @@
       border: 0.5px solid var(--gray-200);
       font-weight: 500;
     }
+    .badge-site {
+      background: #E6F1FB; color: #0C447C; border-color: #B5D4F4;
+    }
     .card-info {
       font-size: 13px; color: var(--gray-400);
       display: flex; align-items: center; gap: 6px; margin-top: 6px;
     }
     .card-info i { font-size: 14px; flex-shrink: 0; }
     .card-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-comment {
+      font-size: 12px; color: var(--gray-600);
+      background: var(--gray-100); border-radius: var(--radius-md);
+      padding: 6px 10px; margin-top: 8px;
+      font-style: italic;
+    }
     .card-actions {
       display: flex; gap: 6px;
       margin-top: 12px; padding-top: 12px;
@@ -178,27 +180,35 @@
       background: rgba(0,0,0,0.35);
       display: flex; align-items: center; justify-content: center;
       z-index: 100; padding: 1rem;
+      overflow-y: auto;
     }
     .modal {
       background: #fff;
       border: 0.5px solid var(--gray-200);
       border-radius: var(--radius-lg);
       padding: 1.75rem;
-      width: 100%; max-width: 440px;
+      width: 100%; max-width: 460px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      margin: auto;
     }
     .modal h2 { font-size: 17px; font-weight: 500; margin-bottom: 1.25rem; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
     .field { margin-bottom: 12px; }
     .field label { display: block; font-size: 13px; color: var(--gray-600); margin-bottom: 5px; }
-    .field input, .field select {
+    .field input, .field select, .field textarea {
       width: 100%; height: 38px; padding: 0 12px;
       border: 0.5px solid var(--gray-200);
       border-radius: var(--radius-md);
       font-size: 14px; outline: none;
       transition: border-color 0.15s;
+      font-family: inherit;
     }
-    .field input:focus, .field select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
+    .field textarea { height: 64px; padding: 8px 12px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
+    .field-error { border-color: #E5484D !important; }
+    .field-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+    .field-hint.error { color: #E5484D; }
     .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
 
     /* Notice */
@@ -217,6 +227,7 @@
       #search { width: 100%; }
       .controls { flex-direction: column; }
       .controls-right { margin-left: 0; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -238,12 +249,14 @@
   </div>
 
   <div class="controls">
-    <input type="text" id="search" placeholder="Rechercher par nom, prénom, spécialité…" oninput="applyFilters()">
+    <input type="text" id="search" placeholder="Rechercher par nom, fonction, n° abrégé…" oninput="applyFilters()">
+    <select id="filterSite" onchange="applyFilters()">
+      <option value="">Tous les sites</option>
+      <option value="Montdidier">Montdidier</option>
+      <option value="Roye">Roye</option>
+    </select>
     <select id="filterService" onchange="applyFilters()">
       <option value="">Tous les services</option>
-    </select>
-    <select id="filterRole" onchange="applyFilters()">
-      <option value="">Tous les rôles</option>
     </select>
     <div class="controls-right">
       <button class="btn btn-primary" onclick="openAdd()">
@@ -260,27 +273,53 @@
 <div class="modal-bg" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h2 id="modal-title">Nouvelle fiche</h2>
+
+    <div class="form-row">
+      <div class="field">
+        <label>Site *</label>
+        <select id="f-site">
+          <option value="Montdidier">Montdidier</option>
+          <option value="Roye">Roye</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Titre</label>
+        <select id="f-titre">
+          <option value="Monsieur">Monsieur</option>
+          <option value="Madame">Madame</option>
+          <option value="Docteur">Docteur</option>
+        </select>
+      </div>
+    </div>
+
     <div class="form-row">
       <div class="field"><label>Prénom *</label><input type="text" id="f-prenom" placeholder="Prénom"></div>
       <div class="field"><label>Nom *</label><input type="text" id="f-nom" placeholder="Nom"></div>
     </div>
-    <div class="field"><label>Rôle</label>
-      <select id="f-role">
-        <option>Médecin</option><option>Chirurgien</option><option>Infirmier(e)</option>
-        <option>Aide-soignant(e)</option><option>Administratif</option><option>Radiologue</option>
-        <option>Pharmacien(ne)</option><option>Interne</option>
-      </select>
+
+    <div class="form-row">
+      <div class="field"><label>Service</label><input type="text" id="f-service" placeholder="Ex : Cardiologie"></div>
+      <div class="field"><label>Fonction</label><input type="text" id="f-fonction" placeholder="Ex : Infirmier(e)"></div>
     </div>
-    <div class="field"><label>Service</label>
-      <select id="f-service">
-        <option>Urgences</option><option>Cardiologie</option><option>Pédiatrie</option>
-        <option>Chirurgie</option><option>Radiologie</option><option>Neurologie</option>
-        <option>Oncologie</option><option>Administration</option><option>Pharmacie</option>
-        <option>Bloc opératoire</option>
-      </select>
+
+    <div class="form-row">
+      <div class="field">
+        <label>Téléphone</label>
+        <input type="text" id="f-tel" placeholder="01 23 45 67 89" maxlength="14" oninput="formatPhoneInput(this)">
+        <div class="field-hint" id="f-tel-hint">Format français : 10 chiffres</div>
+      </div>
+      <div class="field">
+        <label>Numéro abrégé</label>
+        <input type="text" id="f-abrege" placeholder="1234" maxlength="4" inputmode="numeric" oninput="formatAbregeInput(this)">
+        <div class="field-hint" id="f-abrege-hint">4 chiffres</div>
+      </div>
     </div>
-    <div class="field"><label>Téléphone</label><input type="text" id="f-tel" placeholder="01 23 45 67 89"></div>
-    <div class="field"><label>Email</label><input type="text" id="f-email" placeholder="prenom.nom@hopital.fr"></div>
+
+    <div class="field">
+      <label>Commentaire</label>
+      <textarea id="f-commentaire" placeholder="Notes, disponibilité, remarques…"></textarea>
+    </div>
+
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Annuler</button>
       <button class="btn btn-primary" onclick="saveModal()"><i class="ti ti-check"></i> Enregistrer</button>
@@ -301,7 +340,6 @@ let filtered = [];
 let editId = null;
 let nextId = 100;
 
-// Load data from personnel.json, fallback to localStorage
 async function loadData() {
   const saved = localStorage.getItem('annuaire_staff');
   if (saved) {
@@ -335,41 +373,64 @@ function initials(p, n) {
   return ((p||'')[0]||'').toUpperCase() + ((n||'')[0]||'').toUpperCase();
 }
 
+// Format phone number as French: 01 23 45 67 89
+function formatPhoneInput(el) {
+  let digits = el.value.replace(/\D/g, '').slice(0, 10);
+  let formatted = digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+  el.value = formatted;
+  const hint = document.getElementById('f-tel-hint');
+  if (digits.length > 0 && digits.length < 10) {
+    hint.textContent = `${digits.length}/10 chiffres`;
+    hint.classList.add('error');
+  } else {
+    hint.textContent = 'Format français : 10 chiffres';
+    hint.classList.remove('error');
+  }
+}
+
+function formatAbregeInput(el) {
+  el.value = el.value.replace(/\D/g, '').slice(0, 4);
+  const hint = document.getElementById('f-abrege-hint');
+  if (el.value.length > 0 && el.value.length < 4) {
+    hint.textContent = `${el.value.length}/4 chiffres`;
+    hint.classList.add('error');
+  } else {
+    hint.textContent = '4 chiffres';
+    hint.classList.remove('error');
+  }
+}
+
 function populateFilters() {
-  const services = [...new Set(staff.map(s => s.service))].sort();
-  const roles = [...new Set(staff.map(s => s.role))].sort();
+  const services = [...new Set(staff.map(s => s.service).filter(Boolean))].sort();
   const fSvc = document.getElementById('filterService');
-  const fRole = document.getElementById('filterRole');
-  const curSvc = fSvc.value, curRole = fRole.value;
+  const curSvc = fSvc.value;
   fSvc.innerHTML = '<option value="">Tous les services</option>' +
-    services.map(s => `<option value="${s}"${curSvc===s?' selected':''}>${s}</option>`).join('');
-  fRole.innerHTML = '<option value="">Tous les rôles</option>' +
-    roles.map(r => `<option value="${r}"${curRole===r?' selected':''}>${r}</option>`).join('');
+    services.map(s => `<option value="${escAttr(s)}"${curSvc===s?' selected':''}>${escHtml(s)}</option>`).join('');
 }
 
 function applyFilters() {
   const q = document.getElementById('search').value.toLowerCase().trim();
+  const site = document.getElementById('filterSite').value;
   const svc = document.getElementById('filterService').value;
-  const role = document.getElementById('filterRole').value;
   filtered = staff.filter(s => {
-    const matchQ = !q || [s.nom,s.prenom,s.role,s.service,s.email,s.tel].join(' ').toLowerCase().includes(q);
+    const matchQ = !q || [s.nom,s.prenom,s.fonction,s.service,s.site,s.tel,s.abrege,s.commentaire,s.titre]
+      .join(' ').toLowerCase().includes(q);
+    const matchSite = !site || s.site === site;
     const matchSvc = !svc || s.service === svc;
-    const matchRole = !role || s.role === role;
-    return matchQ && matchSvc && matchRole;
+    return matchQ && matchSite && matchSvc;
   });
   renderStats();
   renderGrid();
 }
 
 function renderStats() {
-  const services = [...new Set(staff.map(s => s.service))];
-  const topSvc = services.map(s => ({s, n: staff.filter(x => x.service===s).length}))
-    .sort((a,b) => b.n - a.n)[0];
+  const sites = [...new Set(staff.map(s => s.site).filter(Boolean))];
+  const services = [...new Set(staff.map(s => s.service).filter(Boolean))];
   document.getElementById('stats').innerHTML = `
     <div class="stat"><div class="stat-label">Total personnel</div><div class="stat-value">${staff.length}</div></div>
+    <div class="stat"><div class="stat-label">Sites</div><div class="stat-value">${sites.length}</div></div>
     <div class="stat"><div class="stat-label">Services</div><div class="stat-value">${services.length}</div></div>
     <div class="stat"><div class="stat-label">Résultats</div><div class="stat-value">${filtered.length}</div></div>
-    ${topSvc ? `<div class="stat"><div class="stat-label">Service le plus grand</div><div class="stat-value" style="font-size:16px;padding-top:4px">${topSvc.s} <span style="font-size:13px;color:var(--gray-400)">(${topSvc.n})</span></div></div>` : ''}
   `;
 }
 
@@ -380,18 +441,23 @@ function renderGrid() {
     return;
   }
   grid.innerHTML = filtered.map(s => {
-    const col = avatarColor(s.nom + s.prenom);
+    const col = avatarColor((s.nom||'') + (s.prenom||''));
+    const displayName = `${s.titre ? s.titre + ' ' : ''}${escHtml(s.prenom)} ${escHtml(s.nom)}`;
     return `<div class="card">
       <div class="card-head">
         <div class="avatar" style="background:${col.bg};color:${col.color}">${initials(s.prenom, s.nom)}</div>
         <div>
-          <div class="card-name">${escHtml(s.prenom)} ${escHtml(s.nom)}</div>
-          <div class="card-role">${escHtml(s.role)}</div>
+          <div class="card-name">${displayName}</div>
+          ${s.fonction ? `<div class="card-fonction">${escHtml(s.fonction)}</div>` : ''}
         </div>
       </div>
-      <span class="badge"><i class="ti ti-building-hospital" style="font-size:12px"></i>${escHtml(s.service)}</span>
+      <div class="badge-row">
+        ${s.site ? `<span class="badge badge-site"><i class="ti ti-map-pin" style="font-size:12px"></i>${escHtml(s.site)}</span>` : ''}
+        ${s.service ? `<span class="badge"><i class="ti ti-building-hospital" style="font-size:12px"></i>${escHtml(s.service)}</span>` : ''}
+      </div>
       ${s.tel ? `<div class="card-info"><i class="ti ti-phone"></i><span>${escHtml(s.tel)}</span></div>` : ''}
-      ${s.email ? `<div class="card-info"><i class="ti ti-mail"></i><span>${escHtml(s.email)}</span></div>` : ''}
+      ${s.abrege ? `<div class="card-info"><i class="ti ti-pound"></i><span>Abrégé : ${escHtml(s.abrege)}</span></div>` : ''}
+      ${s.commentaire ? `<div class="card-comment">${escHtml(s.commentaire)}</div>` : ''}
       <div class="card-actions">
         <button class="btn btn-sm" onclick="openEdit(${s.id})"><i class="ti ti-edit"></i> Modifier</button>
         <button class="btn btn-sm btn-danger" onclick="deleteMember(${s.id})"><i class="ti ti-trash"></i> Supprimer</button>
@@ -403,16 +469,24 @@ function renderGrid() {
 function escHtml(str) {
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function escAttr(str) { return escHtml(str); }
 
 function openAdd() {
   editId = null;
   document.getElementById('modal-title').textContent = 'Nouvelle fiche';
+  document.getElementById('f-site').value = 'Montdidier';
+  document.getElementById('f-titre').value = 'Monsieur';
   document.getElementById('f-prenom').value = '';
   document.getElementById('f-nom').value = '';
-  document.getElementById('f-role').value = 'Médecin';
-  document.getElementById('f-service').value = 'Cardiologie';
+  document.getElementById('f-service').value = '';
+  document.getElementById('f-fonction').value = '';
   document.getElementById('f-tel').value = '';
-  document.getElementById('f-email').value = '';
+  document.getElementById('f-abrege').value = '';
+  document.getElementById('f-commentaire').value = '';
+  document.getElementById('f-tel-hint').textContent = 'Format français : 10 chiffres';
+  document.getElementById('f-tel-hint').classList.remove('error');
+  document.getElementById('f-abrege-hint').textContent = '4 chiffres';
+  document.getElementById('f-abrege-hint').classList.remove('error');
   document.getElementById('modal').style.display = 'flex';
   document.getElementById('f-prenom').focus();
 }
@@ -422,12 +496,19 @@ function openEdit(id) {
   const s = staff.find(x => x.id === id);
   if (!s) return;
   document.getElementById('modal-title').textContent = 'Modifier la fiche';
-  document.getElementById('f-prenom').value = s.prenom;
-  document.getElementById('f-nom').value = s.nom;
-  document.getElementById('f-role').value = s.role;
-  document.getElementById('f-service').value = s.service;
+  document.getElementById('f-site').value = s.site || 'Montdidier';
+  document.getElementById('f-titre').value = s.titre || 'Monsieur';
+  document.getElementById('f-prenom').value = s.prenom || '';
+  document.getElementById('f-nom').value = s.nom || '';
+  document.getElementById('f-service').value = s.service || '';
+  document.getElementById('f-fonction').value = s.fonction || '';
   document.getElementById('f-tel').value = s.tel || '';
-  document.getElementById('f-email').value = s.email || '';
+  document.getElementById('f-abrege').value = s.abrege || '';
+  document.getElementById('f-commentaire').value = s.commentaire || '';
+  document.getElementById('f-tel-hint').textContent = 'Format français : 10 chiffres';
+  document.getElementById('f-tel-hint').classList.remove('error');
+  document.getElementById('f-abrege-hint').textContent = '4 chiffres';
+  document.getElementById('f-abrege-hint').classList.remove('error');
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -438,18 +519,34 @@ function closeModal() {
 function saveModal() {
   const prenom = document.getElementById('f-prenom').value.trim();
   const nom = document.getElementById('f-nom').value.trim();
+  const tel = document.getElementById('f-tel').value.trim();
+  const abrege = document.getElementById('f-abrege').value.trim();
+
   if (!prenom || !nom) {
     alert('Le prénom et le nom sont obligatoires.');
     return;
   }
+  const telDigits = tel.replace(/\D/g, '');
+  if (tel && telDigits.length !== 10) {
+    alert('Le numéro de téléphone doit contenir 10 chiffres (format français).');
+    return;
+  }
+  if (abrege && abrege.length !== 4) {
+    alert('Le numéro abrégé doit contenir exactement 4 chiffres.');
+    return;
+  }
+
   const entry = {
     id: editId != null ? editId : nextId++,
+    site: document.getElementById('f-site').value,
+    titre: document.getElementById('f-titre').value,
     prenom,
     nom,
-    role: document.getElementById('f-role').value,
-    service: document.getElementById('f-service').value,
-    tel: document.getElementById('f-tel').value.trim(),
-    email: document.getElementById('f-email').value.trim()
+    service: document.getElementById('f-service').value.trim(),
+    fonction: document.getElementById('f-fonction').value.trim(),
+    tel,
+    abrege,
+    commentaire: document.getElementById('f-commentaire').value.trim()
   };
   if (editId != null) {
     staff = staff.map(s => s.id === editId ? entry : s);
@@ -472,7 +569,6 @@ function deleteMember(id) {
   applyFilters();
 }
 
-// Keyboard: Escape closes modal
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 loadData();
