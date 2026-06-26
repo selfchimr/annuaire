@@ -69,7 +69,7 @@
     }
     .controls input:focus, .controls select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
     #search { width: 240px; }
-    .controls-right { margin-left: auto; }
+    .controls-right { margin-left: auto; display: flex; gap: 8px; }
     .btn {
       height: 38px;
       padding: 0 16px;
@@ -229,6 +229,29 @@
       .controls-right { margin-left: 0; }
       .form-row, .form-row-3 { grid-template-columns: 1fr; }
     }
+
+    /* Vue listing imprimable */
+    .print-only { display: none; }
+    .listing-header { margin-bottom: 20px; border-bottom: 2px solid #1a1a18; padding-bottom: 10px; }
+    .listing-header h1 { font-size: 20px; margin-bottom: 4px; }
+    .listing-header .listing-meta { font-size: 12px; color: #5f5e5a; }
+    .listing-service { margin-bottom: 18px; }
+    .listing-service h2 {
+      font-size: 14px; background: #f0f0ee; padding: 6px 10px;
+      border-left: 3px solid #185FA5; margin-bottom: 6px;
+    }
+    .listing-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .listing-table th, .listing-table td {
+      text-align: left; padding: 5px 8px; border-bottom: 1px solid #e0e0dc;
+    }
+    .listing-table th { font-weight: 600; color: #5f5e5a; font-size: 11px; text-transform: uppercase; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #print-view, #print-view * { visibility: visible; }
+      #print-view { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
+      .modal-bg { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -245,12 +268,12 @@
 
   <div class="notice" id="notice">
     <i class="ti ti-info-circle"></i>
-    <span>Cet annuaire est connecté à Airtable : toutes les modifications sont visibles immédiatement par tous les utilisateurs.</span>
+    <span>Cet annuaire est connecté à Google Sheets : toutes les modifications sont visibles immédiatement par tous les utilisateurs.</span>
   </div>
 
   <div class="notice" id="loading-state" style="display:none">
     <i class="ti ti-loader-2"></i>
-    <span>Chargement des données depuis Airtable…</span>
+    <span>Chargement des données depuis Google Sheets…</span>
   </div>
 
   <div class="notice" id="error-state" style="display:none; background:#FCEBEB; border-color:#F7C1C1; color:#791F1F;">
@@ -269,6 +292,9 @@
       <option value="">Tous les services</option>
     </select>
     <div class="controls-right">
+      <button class="btn" onclick="openPrintModal()">
+        <i class="ti ti-printer"></i> Imprimer / PDF
+      </button>
       <button class="btn btn-primary" onclick="openAdd()">
         <i class="ti ti-plus"></i> Ajouter un membre
       </button>
@@ -336,6 +362,26 @@
     </div>
   </div>
 </div>
+
+<div class="modal-bg" id="print-modal" style="display:none">
+  <div class="modal">
+    <h2>Imprimer le listing</h2>
+    <div class="field">
+      <label>Site à imprimer</label>
+      <select id="print-site">
+        <option value="Montdidier">Montdidier</option>
+        <option value="Roye">Roye</option>
+        <option value="">Tous les sites</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closePrintModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="generatePrintView()"><i class="ti ti-printer"></i> Générer le listing</button>
+    </div>
+  </div>
+</div>
+
+<div id="print-view" class="print-only" style="display:none"></div>
 
 <script>
 // ============================================
@@ -644,6 +690,66 @@ async function deleteMember(id) {
   }
 }
 
+function openPrintModal() {
+  document.getElementById('print-modal').style.display = 'flex';
+}
+function closePrintModal() {
+  document.getElementById('print-modal').style.display = 'none';
+}
+
+function generatePrintView() {
+  const site = document.getElementById('print-site').value;
+  const list = site ? staff.filter(s => s.site === site) : staff.slice();
+
+  const byService = {};
+  list.forEach(s => {
+    const key = s.service || 'Sans service';
+    if (!byService[key]) byService[key] = [];
+    byService[key].push(s);
+  });
+  const services = Object.keys(byService).sort((a,b) => a.localeCompare(b, 'fr'));
+  services.forEach(svc => {
+    byService[svc].sort((a,b) => (a.nom||'').localeCompare(b.nom||'', 'fr'));
+  });
+
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+  const siteLabel = site || 'Tous les sites';
+
+  let html = `
+    <div class="listing-header">
+      <h1>Annuaire du personnel — ${escHtml(siteLabel)}</h1>
+      <div class="listing-meta">Liste générée le ${dateStr} · ${list.length} personne(s)</div>
+    </div>
+  `;
+
+  if (!list.length) {
+    html += `<p>Aucune fiche pour ce site.</p>`;
+  } else {
+    services.forEach(svc => {
+      html += `<div class="listing-service">
+        <h2>${escHtml(svc)} (${byService[svc].length})</h2>
+        <table class="listing-table">
+          <thead><tr><th>Nom</th><th>Fonction</th><th>Téléphone</th><th>Abrégé</th>${site ? '' : '<th>Site</th>'}</tr></thead>
+          <tbody>
+            ${byService[svc].map(s => `<tr>
+              <td>${s.titre ? escHtml(s.titre) + ' ' : ''}${escHtml(s.prenom)} ${escHtml(s.nom)}</td>
+              <td>${escHtml(s.fonction)}</td>
+              <td>${escHtml(s.tel)}</td>
+              <td>${escHtml(s.abrege)}</td>
+              ${site ? '' : `<td>${escHtml(s.site)}</td>`}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    });
+  }
+
+  document.getElementById('print-view').innerHTML = html;
+  closePrintModal();
+  setTimeout(() => window.print(), 100);
+}
+
+// Chargement initial des données
 loadData();
 </script>
 </body>
